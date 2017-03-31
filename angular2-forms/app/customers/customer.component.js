@@ -13,6 +13,7 @@ var core_1 = require("@angular/core");
 //import { NgForm } from '@angular/forms';
 var forms_1 = require("@angular/forms");
 var customer_1 = require("./customer");
+require("rxjs/add/operator/debounceTime");
 //--- Custom Validator without parameters 
 // function ratingRange(control: AbstractControl): { [key: string]: boolean } | null {
 //     if (control.value != undefined && (isNaN(control.value) || control.value < 1 || control.value > 5))
@@ -43,6 +44,10 @@ var CustomerComponent = (function () {
     function CustomerComponent(fb) {
         this.fb = fb;
         this.customer = new customer_1.Customer();
+        this.validationMessages = {
+            required: "Please enter your email address.",
+            pattern: "Please enter a valid email address."
+        };
     }
     CustomerComponent.prototype.ngOnInit = function () {
         var _this = this;
@@ -60,6 +65,8 @@ var CustomerComponent = (function () {
         });
         this.customerForm.get('notification').valueChanges
             .subscribe(function (value) { return _this.setNotification(value); });
+        var emailControl = this.customerForm.get('emailGroup.email');
+        emailControl.valueChanges.debounceTime(1000).subscribe(function (value) { return _this.setValidationMessage(emailControl); });
     };
     CustomerComponent.prototype.save = function () {
         console.log(this.customerForm);
@@ -72,6 +79,14 @@ var CustomerComponent = (function () {
         else
             phoneControl.clearValidators();
         phoneControl.updateValueAndValidity();
+    };
+    CustomerComponent.prototype.setValidationMessage = function (c) {
+        var _this = this;
+        this.emailMessage = "";
+        if ((c.dirty || c.touched) && c.errors) {
+            this.emailMessage = Object.keys(c.errors)
+                .map(function (key) { return _this.validationMessages[key]; }).join(' ');
+        }
     };
     return CustomerComponent;
 }());
