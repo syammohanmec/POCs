@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 //import { NgForm } from '@angular/forms';
-import { FormBuilder, FormGroup, Validator, Validators, AbstractControl, ValidatorFn } from '@angular/forms'
+import { FormBuilder, FormGroup, FormArray, Validator, Validators, AbstractControl, ValidatorFn } from '@angular/forms'
 import { Customer } from './customer';
 import 'rxjs/add/operator/debounceTime';
 
@@ -49,6 +49,10 @@ export class CustomerComponent implements OnInit {
         pattern: "Please enter a valid email address."
     };
 
+    get addresses() : FormArray {
+        return <FormArray> this.customerForm.get('addresses');
+    }
+
     constructor(private fb: FormBuilder) {
 
     }
@@ -65,7 +69,8 @@ export class CustomerComponent implements OnInit {
             phone: '',
             notification: 'email',
             rating: ['', ratingRange(1, 5)],
-            sendCatalog: true
+            sendCatalog: true,
+            addresses: this.fb.array([this.buildAddress()])
         });
 
         this.customerForm.get('notification').valueChanges
@@ -93,8 +98,23 @@ export class CustomerComponent implements OnInit {
         this.emailMessage = "";
         if ((c.dirty || c.touched) && c.errors) {
             this.emailMessage = Object.keys(c.errors)
-                                    .map(key => this.validationMessages[key]).join(' ');
+                .map(key => this.validationMessages[key]).join(' ');
         }
+    }
+
+    buildAddress(): FormGroup {
+        return this.fb.group({
+            addressType: 'home',
+            street1: '',
+            street2: '',
+            city: '',
+            state: '',
+            zip: ''
+        });
+    }
+
+    addAddress() : void {
+        this.addresses.push(this.buildAddress());
     }
 
     // --Template Driven Code--
